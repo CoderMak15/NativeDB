@@ -2,13 +2,14 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
-/[Ll]ibrary/
-/[Tt]emp/
-/[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
-/[Ll]ogs/
-/[Uu]ser[Ss]ettings/
+NativeDB/[Ll]ibrary/
+NativeDB/[Tt]emp/
+NativeDB/[Oo]bj/
+NativeDB/[Bb]uild/
+NativeDB/[Bb]uilds/
+NativeDB/[Ll]ogs/
+NativeDB/[Uu]ser[Ss]ettings/
+NodeServer/node_modules
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
