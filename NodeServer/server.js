@@ -21,44 +21,80 @@ class User {
   }
 
 User.fromJSON = function (login){
-  console.log(login)
     return new User(login.username, login.password)
 }
 
-function login(data, socket){
+async function login(data, socket){
   let user = User.fromJSON(data)
   let encryptedPw = md5(user.Password)
   let query = "SELECT * FROM public.\"Users\" WHERE username = \'" + user.Username + "\' AND password = \'" + encryptedPw + "\'"
-  console.log(query)
-  querydb(query, socket)
+  let result = await querydb(query)
+  console.log(result)
+  socket.write(JSON.stringify(result))
 }
 
-async function querydb(query, socket){
+async function create(data, socket){
+  let user = User.fromJSON(data)
+  let query = "SELECT * FROM public.\"Users\" WHERE username = \'" + user.Username + "\'"
+  let result = await querydb(query)
+
+  if (result.status == 200){
+    socket.write(JSON.stringify({ status: 409, payload: 'User already exists' }))
+    return
+  }
+
+  let encryptedPw = md5(user.Password)
+  query = "INSERT INTO public.\"Users\"(username, password, access, name, surname, email, password_modification) VALUES (\'" + user.Username+ "\', \'" + encryptedPw + "\', False, '', '', '', NOW());"
+  result = await querydb(query)
+  socket.write(JSON.stringify(result))
+}
+
+async function movies(socket){
+  let query = "SELECT name, description, url FROM public.\"Movie\""
+  let result = await querydb(query)
+  console.log(result)
+  socket.write(JSON.stringify(result))
+}
+
+async function querydb(query){
     try {
         const result = await client.query(query)
-    
-        if (result.rows.length > 0) {
-          socket.write(JSON.stringify({ status: 200, payload: result.rows[0]}))
+        let response = null
+
+        if (result.rowCount > 0) {
+          if(result.rows.length > 0){
+            response = { status: 200, payload: result.rows}
+          } else {
+            response = {status: 200, payload: true}
+          }
         } else {
-          socket.write(JSON.stringify({ status: 403, payload: 'Invalid Query or param' }))
+          response = { status: 403, payload: 'Invalid Query or param' }
         }
+        return response
+
       } catch (err) {
-        socket.write(JSON.stringify({ status: 500, payload: 'Error while fetching data from the db' }))
+        return { status: 500, payload: 'Error while fetching data from the db' }
       }
 }
 
 const tcpServer = net.createServer((socket) => {
     console.log('TCP client connected:', socket.remoteAddress + ':' + socket.remotePort);
-
     socket.on('data', (data) => {
-      console.log(data)
       let payload = JSON.parse(data)
-      console.log(payload)
-      if (payload.message === "Login"){
-        login(payload.login, socket)
-      }
-      else {
-        socket.write({ status: 403, payload: 'End Point undefined'})
+
+      switch(payload.message){
+        case "Login":
+          login(payload.login, socket)
+          break
+        case "Create":
+          create(payload.login, socket)
+          break
+        case "Movies":
+          movies(socket)
+          break
+        default:
+          socket.write({ status: 403, payload: 'End Point undefined'})
+          break
       }
     });
   

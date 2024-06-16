@@ -17,7 +17,7 @@ public class Socket : MonoBehaviour
 
     private void Start()
     {
-        Connect();        
+        Connect();
     }
 
     private void OnDestroy()
@@ -46,11 +46,11 @@ public class Socket : MonoBehaviour
         _client = null;
     }
 
-    public Client TryLogin(string username, string password)
+    public T TryLoginSignin<T>(string loginType, string username, string password)
     {
         LoginPayload payload = new()
         {
-            message = "Login",
+            message = loginType,
             login = new()
             {
                 username = username,
@@ -58,14 +58,7 @@ public class Socket : MonoBehaviour
             }
         };
 
-        string JSON_Body = JsonUtility.ToJson(payload);
-        byte[] bodyRaw = new System.Text.UTF8Encoding().GetBytes(JSON_Body);
-        NetworkStream stream = _client.GetStream();
-        stream.Write(bodyRaw, 0, bodyRaw.Length);
-        byte[] responseData = new byte[1024];
-        int bytesRead = stream.Read(responseData, 0, responseData.Length);
-        string response = System.Text.Encoding.UTF8.GetString(responseData, 0, bytesRead);
-        LoginResponse logResult = JsonUtility.FromJson<LoginResponse>(response);
+        Response<T> logResult = SendMessage<Response<T>>(payload);
 
         Debug.Log("Status : " + logResult.status);
 
@@ -74,6 +67,34 @@ public class Socket : MonoBehaviour
             return logResult.payload;
         }
 
+        return default(T);
+    }
+
+    public Movie[] GetMovies()
+    {
+        Request payload = new()
+        {
+            message = "Movies"
+        };
+
+        Response<Movie[]> logResult = SendMessage<Response<Movie[]>>(payload);
+        if (logResult.status == 200)
+        {
+            return logResult.payload;
+        }
+
         return null;
+    }
+
+    private T SendMessage<T>(object payload)
+    {
+        string JSON_Body = JsonUtility.ToJson(payload);
+        byte[] bodyRaw = new System.Text.UTF8Encoding().GetBytes(JSON_Body);
+        NetworkStream stream = _client.GetStream();
+        stream.Write(bodyRaw, 0, bodyRaw.Length);
+        byte[] responseData = new byte[2048];
+        int bytesRead = stream.Read(responseData, 0, responseData.Length);
+        string response = System.Text.Encoding.UTF8.GetString(responseData, 0, bytesRead);
+        return JsonUtility.FromJson<T>(response);
     }
 }

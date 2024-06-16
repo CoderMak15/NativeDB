@@ -16,7 +16,14 @@ public class UI : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         _scaler = GetComponent<CanvasScaler>();
-        _scaler.scaleFactor = (Screen.width / _ref[0]);
+        if(Screen.width > Screen.height)
+        {
+            _scaler.scaleFactor = (Screen.height / _ref[1]);
+        }
+        else
+        {
+            _scaler.scaleFactor = (Screen.width / _ref[0]);
+        }
     }
 
     private void OnDestroy()

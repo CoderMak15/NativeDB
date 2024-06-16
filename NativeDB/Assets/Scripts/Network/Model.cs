@@ -1,8 +1,8 @@
 [System.Serializable]
-public class LoginResponse
+public class Response<T>
 {
     public int status;
-    public Client payload;
+    public T payload;
 }
 
 [System.Serializable]
@@ -19,6 +19,14 @@ public class Client
 }
 
 [System.Serializable]
+public class Movie
+{
+    public string name;
+    public string description;
+    public string url;
+}
+
+[System.Serializable]
 public class LoginInfo
 {
     public string username;
@@ -30,4 +38,10 @@ public class LoginPayload
 {
     public string message;
     public LoginInfo login;
+}
+
+[System.Serializable]
+public class Request
+{
+    public string message;
 }
