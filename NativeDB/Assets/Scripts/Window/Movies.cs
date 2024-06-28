@@ -1,11 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 
 public class Movies : Window
 {
+    [SerializeField] private Window _main;
+    [SerializeField] private Window _setting;
+
     [SerializeField] private TextMeshProUGUI _title;
     [SerializeField] private TextMeshProUGUI _description;
 
@@ -19,7 +19,7 @@ public class Movies : Window
     private void Start()
     {
         Movie[] movies = Socket._instance.GetMovies();
-        if(movies != null && movies.Length > 0)
+        if (movies != null && movies.Length > 0)
         {
             _movies = new Movie[movies.Length];
             for (int i = 0; i < movies.Length; ++i)
@@ -46,4 +46,13 @@ public class Movies : Window
         _description.text = current.description;
     }
 
+    public void OpenSettings()
+    {
+        UI._instance.Open(_setting);
+    }
+
+    public void Logout()
+    {
+        UI._instance.Open(_main);
+    }
 }

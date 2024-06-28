@@ -8,6 +8,21 @@ public class Response<T>
 [System.Serializable]
 public class Client
 {
+    public Client()
+    {
+
+    }
+
+    public Client(Client c)
+    {
+        id = c.id;
+        username = c.username;
+        password = c.password;
+        name = c.name;
+        surname = c.surname;
+        email = c.email;
+    }
+
     public int id;
     public string username;
     public string password;
@@ -38,6 +53,13 @@ public class LoginPayload
 {
     public string message;
     public LoginInfo login;
+}
+
+[System.Serializable]
+public class UpdatePayload
+{
+    public string message;
+    public Client client;
 }
 
 [System.Serializable]

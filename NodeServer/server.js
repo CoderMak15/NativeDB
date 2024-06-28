@@ -13,19 +13,34 @@ const client = new Pool({
   password: "password"
 })
 
-class User {
-    constructor(Username, Password) {
-      this.Username = Username;
-      this.Password = Password;
+class PartialUser {
+    constructor(username, password) {
+      this.Username = username;
+      this.Password = password;
     }
   }
 
-User.fromJSON = function (login){
-    return new User(login.username, login.password)
+class User{
+  constructor(id, name, surname, email, username, password) {
+    this.Id = id;
+    this.Name = name;
+    this.Surname = surname;
+    this.Email = email;
+    this.Username = username;
+    this.Password = password;
+  }
+}
+
+PartialUser.fromJSON = function (login){
+    return new PartialUser(login.username, login.password)
+}
+
+User.fromJSON = function (client){
+  return new User(client.id, client.name, client.surname, client.email, client.username, client.password)
 }
 
 async function login(data, socket){
-  let user = User.fromJSON(data)
+  let user = PartialUser.fromJSON(data)
   let encryptedPw = md5(user.Password)
   let query = "SELECT * FROM public.\"Users\" WHERE username = \'" + user.Username + "\' AND password = \'" + encryptedPw + "\'"
   let result = await querydb(query)
@@ -34,7 +49,7 @@ async function login(data, socket){
 }
 
 async function create(data, socket){
-  let user = User.fromJSON(data)
+  let user = PartialUser.fromJSON(data)
   let query = "SELECT * FROM public.\"Users\" WHERE username = \'" + user.Username + "\'"
   let result = await querydb(query)
 
@@ -46,11 +61,20 @@ async function create(data, socket){
   let encryptedPw = md5(user.Password)
   query = "INSERT INTO public.\"Users\"(username, password, access, name, surname, email, password_modification) VALUES (\'" + user.Username+ "\', \'" + encryptedPw + "\', False, '', '', '', NOW());"
   result = await querydb(query)
+  console.log(result)
   socket.write(JSON.stringify(result))
 }
 
 async function movies(socket){
   let query = "SELECT name, description, url FROM public.\"Movie\""
+  let result = await querydb(query)
+  console.log(result)
+  socket.write(JSON.stringify(result))
+}
+
+async function update(data, socket){
+  let user = User.fromJSON(data)
+  let query = "UPDATE public.\"Users\" SET username = \'" + user.Username + "\', password = \'" + user.Password + "\', name = \'" + user.Name + "\', surname = \'" + user.Surname + "\', email = \'" + user.Email + "\' WHERE id = " + user.Id + ";"
   let result = await querydb(query)
   console.log(result)
   socket.write(JSON.stringify(result))
@@ -92,8 +116,11 @@ const tcpServer = net.createServer((socket) => {
         case "Movies":
           movies(socket)
           break
+        case "Update":
+          update(payload.client, socket)
+          break
         default:
-          socket.write({ status: 403, payload: 'End Point undefined'})
+          socket.write(JSON.stringify({ status: 403, payload: 'End Point undefined'}))
           break
       }
     });

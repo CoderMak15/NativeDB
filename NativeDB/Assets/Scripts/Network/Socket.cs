@@ -86,6 +86,16 @@ public class Socket : MonoBehaviour
         return null;
     }
 
+    public bool TrySaveChanges(Client client)
+    {
+        UpdatePayload payload = new()
+        {
+            message = "Update",
+            client = client
+        };
+        return SendMessage<Response<bool>>(payload).status == 200;
+    }
+
     private T SendMessage<T>(object payload)
     {
         string JSON_Body = JsonUtility.ToJson(payload);

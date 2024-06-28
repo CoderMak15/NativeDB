@@ -1,9 +1,10 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Login : Window
 {
+    public static Client _currentClient;
+
     [SerializeField] private TMP_InputField _username;
     [SerializeField] private TMP_InputField _password;
     [SerializeField] private TextMeshProUGUI _error;
@@ -12,14 +13,16 @@ public class Login : Window
 
     public void TryConfirm()
     {
-        Client c = Socket._instance.TryLoginSignin<Client>("Login", _username.text, _password.text);
-        if (c != null)
+        Client[] rows = Socket._instance.TryLoginSignin<Client[]>("Login", _username.text, _password.text);
+        if (rows == null || rows.Length == 0)
         {
-            UI._instance.Open(_menu);
-        }
-        else
-        {
+            _error.color = Color.red;
             _error.text = "Username doesn't exist or invalid credentials";
+        }
+        else if (rows[0] != null)
+        {
+            _currentClient = rows[0];
+            UI._instance.Open(_menu);
         }
     }
 
@@ -32,13 +35,16 @@ public class Login : Window
         }
 
         bool result = Socket._instance.TryLoginSignin<bool>("Create", _username.text, _password.text);
-        if (result)
+
+        if (!result)
         {
-            UI._instance.Open(_menu);
+            _error.color = Color.red;
+            _error.text = "Username already exists";
         }
         else
         {
-            _error.text = "Username already exists";
+            _error.color = Color.green;
+            _error.text = "User successfully create";
         }
     }
 }
