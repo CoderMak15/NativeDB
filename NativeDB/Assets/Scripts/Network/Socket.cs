@@ -1,110 +1,113 @@
 using System.Net.Sockets;
 using UnityEngine;
 
-public class Socket : MonoBehaviour
+namespace com.rac.network
 {
-    public static Socket _instance { get; private set; }
-
-    private TcpClient _client = null;
-    private const string URI = "10.0.0.121";
-    private const int PORT = 3000;
-
-    private void Awake()
+    public class Socket : MonoBehaviour
     {
-        _instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
+        public static Socket _instance { get; private set; }
 
-    private void Start()
-    {
-        Connect();
-    }
+        private TcpClient _client = null;
+        private const string URI = "10.0.0.121";
+        private const int PORT = 3000;
 
-    private void OnDestroy()
-    {
-        Disconnect();
-        _instance = null;
-    }
-
-    public void Connect()
-    {
-        try
+        private void Awake()
         {
-            _client = new TcpClient();
-            _client.Connect(URI, PORT);
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
         }
-        catch (System.Exception e)
+
+        private void Start()
         {
-            Debug.Log($"Exception: {e.Message}");
+            Connect();
         }
-    }
 
-    public void Disconnect()
-    {
-        _client?.Close();
-        _client?.Dispose();
-        _client = null;
-    }
-
-    public T TryLoginSignin<T>(string loginType, string username, string password)
-    {
-        LoginPayload payload = new()
+        private void OnDestroy()
         {
-            message = loginType,
-            login = new()
+            Disconnect();
+            _instance = null;
+        }
+
+        public void Connect()
+        {
+            try
             {
-                username = username,
-                password = password
+                _client = new TcpClient();
+                _client.Connect(URI, PORT);
             }
-        };
-
-        Response<T> logResult = SendMessage<Response<T>>(payload);
-
-        Debug.Log("Status : " + logResult.status);
-
-        if (logResult.status == 200)
-        {
-            return logResult.payload;
+            catch (System.Exception e)
+            {
+                Debug.Log($"Exception: {e.Message}");
+            }
         }
 
-        return default(T);
-    }
-
-    public Movie[] GetMovies()
-    {
-        Request payload = new()
+        public void Disconnect()
         {
-            message = "Movies"
-        };
-
-        Response<Movie[]> logResult = SendMessage<Response<Movie[]>>(payload);
-        if (logResult.status == 200)
-        {
-            return logResult.payload;
+            _client?.Close();
+            _client?.Dispose();
+            _client = null;
         }
 
-        return null;
-    }
-
-    public bool TrySaveChanges(Client client)
-    {
-        UpdatePayload payload = new()
+        public T TryLoginSignin<T>(string loginType, string username, string password)
         {
-            message = "Update",
-            client = client
-        };
-        return SendMessage<Response<bool>>(payload).status == 200;
-    }
+            LoginPayload payload = new()
+            {
+                message = loginType,
+                login = new()
+                {
+                    username = username,
+                    password = password
+                }
+            };
 
-    private T SendMessage<T>(object payload)
-    {
-        string JSON_Body = JsonUtility.ToJson(payload);
-        byte[] bodyRaw = new System.Text.UTF8Encoding().GetBytes(JSON_Body);
-        NetworkStream stream = _client.GetStream();
-        stream.Write(bodyRaw, 0, bodyRaw.Length);
-        byte[] responseData = new byte[2048];
-        int bytesRead = stream.Read(responseData, 0, responseData.Length);
-        string response = System.Text.Encoding.UTF8.GetString(responseData, 0, bytesRead);
-        return JsonUtility.FromJson<T>(response);
+            Response<T> logResult = SendMessage<Response<T>>(payload);
+
+            Debug.Log("Status : " + logResult.status);
+
+            if (logResult.status == 200)
+            {
+                return logResult.payload;
+            }
+
+            return default(T);
+        }
+
+        public Movie[] GetMovies()
+        {
+            Request payload = new()
+            {
+                message = "Movies"
+            };
+
+            Response<Movie[]> logResult = SendMessage<Response<Movie[]>>(payload);
+            if (logResult.status == 200)
+            {
+                return logResult.payload;
+            }
+
+            return null;
+        }
+
+        public bool TrySaveChanges(Client client)
+        {
+            UpdatePayload payload = new()
+            {
+                message = "Update",
+                client = client
+            };
+            return SendMessage<Response<bool>>(payload).status == 200;
+        }
+
+        private T SendMessage<T>(object payload)
+        {
+            string JSON_Body = JsonUtility.ToJson(payload);
+            byte[] bodyRaw = new System.Text.UTF8Encoding().GetBytes(JSON_Body);
+            NetworkStream stream = _client.GetStream();
+            stream.Write(bodyRaw, 0, bodyRaw.Length);
+            byte[] responseData = new byte[2048];
+            int bytesRead = stream.Read(responseData, 0, responseData.Length);
+            string response = System.Text.Encoding.UTF8.GetString(responseData, 0, bytesRead);
+            return JsonUtility.FromJson<T>(response);
+        }
     }
 }

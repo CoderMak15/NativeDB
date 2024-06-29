@@ -1,11 +1,15 @@
+using com.rac.ui;
 using UnityEngine;
 
-public class Bootstrap : MonoBehaviour
+namespace com.rac
 {
-    [SerializeField] private Window _login;
-
-    void Start()
+    public class Bootstrap : MonoBehaviour
     {
-        UI._instance.Open(_login);
+        [SerializeField] private Window _login;
+
+        void Start()
+        {
+            UI._instance.Open(_login);
+        }
     }
 }

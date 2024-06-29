@@ -1,50 +1,56 @@
+using com.rac.network;
+using com.rac.ui;
 using TMPro;
 using UnityEngine;
 
-public class Login : Window
+namespace com.rac.core
 {
-    public static Client _currentClient;
-
-    [SerializeField] private TMP_InputField _username;
-    [SerializeField] private TMP_InputField _password;
-    [SerializeField] private TextMeshProUGUI _error;
-
-    [SerializeField] private Window _menu;
-
-    public void TryConfirm()
+    public class Login : Window
     {
-        Client[] rows = Socket._instance.TryLoginSignin<Client[]>("Login", _username.text, _password.text);
-        if (rows == null || rows.Length == 0)
-        {
-            _error.color = Color.red;
-            _error.text = "Username doesn't exist or invalid credentials";
-        }
-        else if (rows[0] != null)
-        {
-            _currentClient = rows[0];
-            UI._instance.Open(_menu);
-        }
-    }
+        public static Client _currentClient;
 
-    public void TrySignin()
-    {
-        if (_password.text.Length < 8)
+        [SerializeField] private TMP_InputField _username;
+        [SerializeField] private TMP_InputField _password;
+        [SerializeField] private TextMeshProUGUI _error;
+
+        [SerializeField] private Window _menu;
+
+        public void TryConfirm()
         {
-            _error.text = "Password must be at least 8 characters";
-            return;
+            Client[] rows = Socket._instance.TryLoginSignin<Client[]>("Login", _username.text, _password.text);
+            if (rows == null || rows.Length == 0)
+            {
+                _error.color = Color.red;
+                _error.text = "Username doesn't exist or invalid credentials";
+            }
+            else if (rows[0] != null)
+            {
+                _currentClient = rows[0];
+                UI._instance.Open(_menu);
+            }
         }
 
-        bool result = Socket._instance.TryLoginSignin<bool>("Create", _username.text, _password.text);
+        public void TrySignin()
+        {
+            if (_password.text.Length < 8)
+            {
+                _error.color = Color.red;
+                _error.text = "Password must be at least 8 characters";
+                return;
+            }
 
-        if (!result)
-        {
-            _error.color = Color.red;
-            _error.text = "Username already exists";
-        }
-        else
-        {
-            _error.color = Color.green;
-            _error.text = "User successfully create";
+            bool result = Socket._instance.TryLoginSignin<bool>("Create", _username.text, _password.text);
+
+            if (!result)
+            {
+                _error.color = Color.red;
+                _error.text = "Username already exists";
+            }
+            else
+            {
+                _error.color = Color.green;
+                _error.text = "User successfully create";
+            }
         }
     }
 }

@@ -1,20 +1,23 @@
 using UnityEngine;
 
-public class Window : MonoBehaviour
+namespace com.rac.ui
 {
-    public virtual void Init(object parameter) { }
-    public virtual void Show()
+    public class Window : MonoBehaviour
     {
-        gameObject.SetActive(true);
-    }
+        public virtual void Init(object parameter) { }
+        public virtual void Show()
+        {
+            gameObject.SetActive(true);
+        }
 
-    public virtual void Hide()
-    {
-        gameObject.SetActive(false);
-    }
+        public virtual void Hide()
+        {
+            gameObject.SetActive(false);
+        }
 
-    public virtual void Close()
-    {
-        Destroy(gameObject);
+        public virtual void Close()
+        {
+            Destroy(gameObject);
+        }
     }
 }
