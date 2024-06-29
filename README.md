@@ -27,9 +27,9 @@ Unity:
       - JDK
 
 - Installation:
-- Open the NativeDB project in Unity
-- Switch the platform to Android.
-- Build the APK and install it on your mobile device.
+   - Open the NativeDB project in Unity
+   - Switch the platform to Android.
+   - Build the APK and install it on your mobile device.
 
 Database:
 
